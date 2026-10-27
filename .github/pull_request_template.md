@@ -8,5 +8,5 @@ Validation:
 
 Use a conventional title, such as `fix: preserve episode identities` or
 `feat: add a policy adapter`. Add `!` for an intentional breaking change.
-Add `automerge` to opt into squash merging after every applicable CI check
-passes. Add `hold` to prevent automated merging.
+A maintainer must squash merge manually after every applicable CI check passes.
+Dependency updates and release PRs follow the same requirement.

@@ -1,7 +1,5 @@
 [
-  {"name": "automerge", "color": "0e8a16", "description": "Opt in to squash merging after all applicable CI passes"},
-  {"name": "automerge:dependencies", "color": "0e8a16", "description": "Verified Dependabot patch/minor update eligible for automatic merging"},
-  {"name": "hold", "color": "b60205", "description": "Block automated merging"},
+  {"name": "hold", "color": "b60205", "description": "Maintainer requests changes before merging"},
   {"name": "dependencies", "color": "0366d6", "description": "Dependency update"},
   {"name": "bot:dependabot", "color": "0366d6", "description": "Pull request authored by Dependabot"},
   {"name": "area:ci", "color": "5319e7", "description": "GitHub Actions or repository automation"},
@@ -20,7 +18,5 @@
   {"name": "size:S", "color": "7bc67b", "description": "10 to 99 changed lines"},
   {"name": "size:M", "color": "fbca04", "description": "100 to 499 changed lines"},
   {"name": "size:L", "color": "f9a03f", "description": "500 to 999 changed lines"},
-  {"name": "size:XL", "color": "d73a4a", "description": "At least 1000 changed lines"},
-  {"name": "autorelease: pending", "color": "ededed", "description": "Release Please version PR awaiting merge"},
-  {"name": "autorelease: tagged", "color": "0e8a16", "description": "Release Please created the version tag"}
+  {"name": "size:XL", "color": "d73a4a", "description": "At least 1000 changed lines"}
 ]
