@@ -1,3 +1,3 @@
 """Package version metadata."""
 
-__version__ = "0.0.1rc1"  # x-release-please-version
+__version__ = "0.0.1rc1"

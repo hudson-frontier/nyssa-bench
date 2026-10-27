@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const policy = require('./policy.cjs');
 const {run, reconcileLabels} = require('./pr.cjs');
-const {verifyMain, verifyPublication, dispatch} = require('./release.cjs');
+const {verifyPublication} = require('./release.cjs');
 const {ciPolicy} = require('./ci.cjs');
 
 const pull = () => ({number: 7, state: 'open', draft: false, title: 'fix: repair export', body: '',
@@ -101,25 +101,15 @@ function releaseArgs(runs = []) {
 
 const successfulRun = {head_sha: 'new', event: 'push', status: 'completed', conclusion: 'success'};
 
-test('release preparation is manual-only on main', async () => {
-  await assert.doesNotReject(verifyMain(releaseArgs([successfulRun])));
-  for (const event of ['workflow_run', 'push', 'schedule', 'pull_request_target']) {
-    const args = releaseArgs([successfulRun]);
-    args.context.eventName = event;
-    await assert.rejects(verifyMain(args), /manual workflow dispatch/);
-  }
-  const args = releaseArgs([successfulRun]);
-  args.context.ref = 'refs/heads/feature';
-  await assert.rejects(verifyMain(args), /manual workflow dispatch/);
-});
-
 test('release checks reject stale, missing, pending, and superseded successful CI', async () => {
   for (const runs of [[], [{...successfulRun, head_sha: 'old'}],
     [{...successfulRun, event: 'pull_request'}],
     [{...successfulRun, status: 'in_progress', conclusion: null}, successfulRun],
     [{...successfulRun, conclusion: 'failure'}, successfulRun],
     [{...successfulRun, conclusion: 'cancelled'}, successfulRun]]) {
-    await assert.rejects(verifyMain(releaseArgs(runs)), /must pass CI/);
+    const args = releaseArgs(runs);
+    args.context.ref = 'refs/tags/v0.0.1';
+    await assert.rejects(verifyPublication(args), /must pass CI/);
   }
 });
 
@@ -135,26 +125,4 @@ test('publication requires a manual tag dispatch and successful CI for its exact
   const unchecked = releaseArgs([]);
   unchecked.context.ref = 'refs/tags/v0.0.1';
   await assert.rejects(verifyPublication(unchecked), /must pass CI/);
-});
-
-test('release preparation dispatches CI and labels but never publication', async () => {
-  const calls = [];
-  const prior = {...process.env};
-  try {
-    process.env.RELEASE_PRS = '[{"number": 8}]';
-    // Stale action outputs must not be able to start publication.
-    process.env.RELEASE_CREATED = 'true';
-    process.env.RELEASE_TAG = 'v0.0.1';
-    await dispatch({core: core(), context: {repo: {owner: 'owner', repo: 'repo'}}, github: {rest: {
-      pulls: {get: async () => ({data: {...pull(), number: 8,
-        head: {ref: 'release-please--branches--main', repo: {full_name: 'owner/repo'}}}})},
-      actions: {createWorkflowDispatch: async args => calls.push(args)},
-    }}});
-    assert.deepEqual(calls.map(call => call.workflow_id), ['ci.yml', 'pr-automation.yml']);
-    assert.equal(calls[0].ref, 'release-please--branches--main');
-  } finally {
-    for (const key of ['RELEASE_PRS', 'RELEASE_CREATED', 'RELEASE_TAG']) {
-      if (prior[key] === undefined) delete process.env[key]; else process.env[key] = prior[key];
-    }
-  }
 });

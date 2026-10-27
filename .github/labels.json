@@ -18,7 +18,5 @@
   {"name": "size:S", "color": "7bc67b", "description": "10 to 99 changed lines"},
   {"name": "size:M", "color": "fbca04", "description": "100 to 499 changed lines"},
   {"name": "size:L", "color": "f9a03f", "description": "500 to 999 changed lines"},
-  {"name": "size:XL", "color": "d73a4a", "description": "At least 1000 changed lines"},
-  {"name": "autorelease: pending", "color": "ededed", "description": "Release Please version PR awaiting merge"},
-  {"name": "autorelease: tagged", "color": "0e8a16", "description": "Release Please created the version tag"}
+  {"name": "size:XL", "color": "d73a4a", "description": "At least 1000 changed lines"}
 ]

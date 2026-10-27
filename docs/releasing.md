@@ -48,13 +48,11 @@ The first stable PyPI package version is **0.0.1**. Its TestPyPI candidate is
 `0.0.1rc1`. NEP's independent protocol version remains `0.1.0`; do not rename
 its schemas or conformance fixtures when changing the package version.
 
-Version preparation and publication require separate manual workflow runs.
-After main CI passes, a maintainer can run **Release PR** on `main` to propose
-a version bump. Release Please cannot merge the PR, tag, or publish a release.
-Conventional PR titles determine the bump, and the version PR updates the
-changelog and package version together. See [GitHub automation](github_automation.md)
-for the release PR, explicit CI dispatch, and squash-merge flow. The existing
-protected publishing environments still govern PyPI and TestPyPI publication.
+Version bumps require a manually prepared and reviewed PR. CI and bots do not
+create release PRs, tags, or releases. Update the changelog and package version
+together, then manually squash merge after all applicable CI passes. See
+[GitHub automation](github_automation.md) for the merge policy. Publication needs
+a separate manual workflow run and the protected PyPI/TestPyPI environments.
 
 `nyssa_bench/version.py` is the only package-version source. Hatch reads it
 through `[tool.hatch.version]`, and the CLI exposes it through `nyssa --version`.
@@ -77,16 +75,9 @@ require unavailable reference or hardware evidence to be relabeled as passed;
 the full `nyssa credibility-gate` command exits with `2` until Phase 1 is
 scientifically complete.
 
-Update `nyssa_bench/version.py`, `.release-please-manifest.json`, and `CHANGELOG.md`
-in a reviewed pull request. The manifest version must match the package version.
-Do not change version
-metadata on the tag itself. The commands below use the required initial version;
-when preparing the candidate, validate `--tag v0.0.1rc1` instead.
-
-The temporary `release-as: 0.0.1` setting in `release-please-config.json`
-prevents automatic bumps from skipping the first release. Keep it through
-candidate qualification and the stable release. Once 0.0.1 is published and
-verified, remove the override in a separate PR to resume conventional bumps.
+Update `nyssa_bench/version.py` and `CHANGELOG.md` in a reviewed pull request.
+Do not change version metadata on the tag itself. The commands below use the
+planned initial stable version; validate `--tag v0.0.1rc1` for the candidate.
 
 ## Release candidate
 

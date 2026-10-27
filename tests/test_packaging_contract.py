@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -34,79 +33,15 @@ def test_distribution_identity_and_version_are_single_sourced() -> None:
         validate_release_version("v9.9.9")
 
 
-def test_release_manifest_cannot_drift_from_package_version(tmp_path, monkeypatch):
-    import scripts.validate_release_version as validator
-
-    (tmp_path / "pyproject.toml").write_text(
-        (ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8"
-    )
-    (tmp_path / ".release-please-manifest.json").write_text('{".": "9.9.9"}')
-    monkeypatch.setattr(validator, "ROOT", tmp_path)
-    with pytest.raises(ValueError, match="manifest must match"):
-        validator.validate_release_version()
-
-
-@pytest.mark.parametrize(
-    ("version", "release_as", "valid"),
-    [
-        ("0.0.1", "0.0.1", True),
-        ("0.0.1rc1", "0.0.1", True),
-        ("0.0.1", "0.1.0", False),
-        ("0.0.2", "0.0.1", False),
-        ("0.0.2", None, True),
-    ],
-)
-def test_initial_release_override_cannot_skip_or_repeat_a_version(
-    tmp_path, monkeypatch, version, release_as, valid
-):
-    import scripts.validate_release_version as validator
-
-    (tmp_path / "pyproject.toml").write_text(
-        (ROOT / "pyproject.toml").read_text(encoding="utf-8"), encoding="utf-8"
-    )
-    (tmp_path / ".release-please-manifest.json").write_text(
-        json.dumps({".": version}), encoding="utf-8"
-    )
-    package = {"release-type": "python"}
-    if release_as is not None:
-        package["release-as"] = release_as
-    (tmp_path / "release-please-config.json").write_text(
-        json.dumps({"packages": {".": package}}), encoding="utf-8"
-    )
-    monkeypatch.setattr(validator, "ROOT", tmp_path)
-    monkeypatch.setattr(validator, "__version__", version)
-    if valid:
-        assert validator.validate_release_version(f"v{version}") == version
-    else:
-        with pytest.raises(ValueError, match="release-as must match"):
-            validator.validate_release_version()
-
-
-def test_release_generator_updates_the_single_version_source() -> None:
-    config = json.loads((ROOT / "release-please-config.json").read_text(encoding="utf-8"))
-    assert {"type": "generic", "path": "nyssa_bench/version.py"} in (
-        config["packages"]["."]["extra-files"]
-    )
-    version_source = (ROOT / "nyssa_bench/version.py").read_text(encoding="utf-8")
-    version_line = next(line for line in version_source.splitlines() if line.startswith("__version__"))
-    assert "# x-release-please-version" in version_line
-
-
-def test_release_workflows_are_manual_and_label_bot_cannot_merge() -> None:
+def test_release_workflow_is_manual_and_label_bot_cannot_merge() -> None:
     import yaml
 
     workflows = ROOT / ".github/workflows"
-    for name in ["release-please.yml", "release.yml"]:
-        workflow = yaml.load((workflows / name).read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
-        assert set(workflow["on"]) == {"workflow_dispatch"}
-    preparation = yaml.load(
-        (workflows / "release-please.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
+    publication = yaml.load(
+        (workflows / "release.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
     )
-    release_action = next(
-        step for step in preparation["jobs"]["release"]["steps"]
-        if step.get("uses", "").startswith("googleapis/release-please-action@")
-    )
-    assert release_action["with"]["skip-github-release"] == "true"
+    assert set(publication["on"]) == {"workflow_dispatch"}
+    assert not (workflows / "release-please.yml").exists()
     labeling = yaml.load(
         (workflows / "pr-automation.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
     )
