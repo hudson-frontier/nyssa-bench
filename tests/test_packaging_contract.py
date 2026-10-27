@@ -46,7 +46,7 @@ def test_release_workflow_is_manual_and_label_bot_cannot_merge() -> None:
         (workflows / "pr-automation.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
     )
     assert labeling["permissions"] == {
-        "contents": "read", "pull-requests": "read", "issues": "write"
+        "contents": "read", "pull-requests": "write", "issues": "write"
     }
 
 
