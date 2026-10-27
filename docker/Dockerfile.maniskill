@@ -34,11 +34,11 @@ LABEL org.opencontainers.image.title="NyssaBench ManiSkill" \
       org.opencontainers.image.revision="${NYSSA_COMMIT}" \
       org.opencontainers.image.created="${NYSSA_BUILD_DATE}" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      io.hudson-labs.nyssa.python="3.10" \
-      io.hudson-labs.nyssa.maniskill="${MANISKILL_VERSION}" \
-      io.hudson-labs.nyssa.torch="${TORCH_VERSION}" \
-      io.hudson-labs.nyssa.cuda="12.4" \
-      io.hudson-labs.nyssa.vulkan="1.3"
+      io.hudson-frontier.nyssa.python="3.10" \
+      io.hudson-frontier.nyssa.maniskill="${MANISKILL_VERSION}" \
+      io.hudson-frontier.nyssa.torch="${TORCH_VERSION}" \
+      io.hudson-frontier.nyssa.cuda="12.4" \
+      io.hudson-frontier.nyssa.vulkan="1.3"
 
 ENV NYSSA_CONTAINER_PROFILE=maniskill \
     NYSSA_CONTAINER_VERSION=${NYSSA_VERSION} \

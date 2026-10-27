@@ -1,7 +1,19 @@
-# NyssaBench
+<h1 align="center">NyssaBench</h1>
 
-[![CI](https://github.com/hudson-infinity/nyssa-bench/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/hudson-infinity/nyssa-bench/actions/workflows/ci.yml)
-[Documentation](docs/index.md) · [Quickstart](#quickstart) · [Contributing](CONTRIBUTING.md) · [Apache 2.0](LICENSE)
+<p align="center">Evaluation and failure analysis for robot policies.</p>
+
+<p align="center">
+  <a href="https://github.com/hudson-frontier/nyssa-bench/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hudson-frontier/nyssa-bench/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+</p>
+
+<p align="center">
+  <a href="#installation">Installation</a> ·
+  <a href="#quickstart">Quickstart</a> ·
+  <a href="docs/index.md">Documentation</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
+
+---
 
 NyssaBench is an open-source evaluation and audit framework for robot policies.
 
@@ -25,17 +37,19 @@ its metrics, so you can inspect where a policy failed and assess changes to it.
 Success, robustness, failure, recovery, safety, compute, and sim-real measurements
 remain separate in the [metric vector](docs/metrics.md).
 
-## Quickstart
+## Installation
 
 Use Python 3.11 and [uv](https://docs.astral.sh/uv/getting-started/installation/)
 for this MuJoCo example. Start from a source checkout and install the simulator
 and report dependencies in one environment:
 
 ```bash
-git clone https://github.com/hudson-infinity/nyssa-bench.git
+git clone https://github.com/hudson-frontier/nyssa-bench.git
 cd nyssa-bench
 uv sync --locked --python 3.11 --extra mujoco --extra reports
 ```
+
+## Quickstart
 
 Run three episodes of the inverted-pendulum task:
 
@@ -221,6 +235,8 @@ Bug reports, task contracts, simulator adapters, and policy integrations are
 welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the validation requirements
 and [API stability](docs/api_stability.md) before changing public contracts.
 
+### Development checks
+
 To add development tools to the quickstart environment and run the baseline checks:
 
 ```bash
@@ -236,4 +252,6 @@ dependency updates, and the `automerge` and `hold` labels.
 Report vulnerabilities through [SECURITY.md](SECURITY.md). This project follows
 the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-Built by Hudson Labs. Licensed under [Apache 2.0](LICENSE).
+## License
+
+Built by Hudson Frontier. Licensed under [Apache 2.0](LICENSE).

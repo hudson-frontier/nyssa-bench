@@ -2,9 +2,6 @@ name: Release Python package
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*.*.*"
 
 permissions:
   contents: read
@@ -16,12 +13,13 @@ concurrency:
 jobs:
   build:
     name: Build signed distributions
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
       attestations: write
+      actions: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -33,6 +31,11 @@ jobs:
         run: |
           git fetch --no-tags origin main
           git merge-base --is-ancestor "${GITHUB_SHA}" FETCH_HEAD
+      - name: Require successful CI for the exact release commit
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            await require('./scripts/github/release.cjs').verifyPublication({github, context});
       - name: Install build tools
         run: python -m pip install --upgrade build twine
       - name: Validate tag and package version
