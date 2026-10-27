@@ -535,11 +535,11 @@ def _restore_controller_state(target: Any, state: Any) -> None:
 def _maniskill_collision_materials(env: Any) -> list[tuple[Any, float, float]]:
     target = getattr(env, "unwrapped", env)
     scene = getattr(target, "scene", None)
-    if scene is None:
+    if scene is None or bool(getattr(scene, "gpu_sim_enabled", False)):
         return []
     bodies: list[Any] = []
-    for views_name in ("actor_views", "articulation_views"):
-        views = getattr(scene, views_name, {})
+    for collection_name in ("actors", "articulations", "actor_views", "articulation_views"):
+        views = getattr(scene, collection_name, {})
         values = views.values() if isinstance(views, dict) else views or []
         for view in values:
             bodies.extend(getattr(view, "_bodies", []) or [])
