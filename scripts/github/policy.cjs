@@ -1,10 +1,5 @@
 'use strict';
 
-const REQUIRED_CHECKS = [
-  'test', 'package', 'installed-artifact (3.10)',
-  'installed-artifact (3.13)', 'CI gate',
-];
-
 function conventionalTitle(title, body = '') {
   const match = /^(feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)(?:\([^\r\n()]+\))?(!)?: ([^\r\n]+)$/.exec(title);
   if (!match || !match[3].trim()) {
@@ -47,56 +42,6 @@ function managedLabels(pr, files) {
   return labels;
 }
 
-function dependencyAutomerge(pr, updateType, maintainerChanges) {
-  return pr.user.login === 'dependabot[bot]' && maintainerChanges === 'false'
-    && ['version-update:semver-patch', 'version-update:semver-minor'].includes(updateType);
-}
-
-function mergeEligible(pr) {
-  const labels = new Set(pr.labels.map(label => label.name));
-  return pr.state === 'open' && !pr.draft && pr.base.ref === 'main'
-    && !labels.has('hold') && (labels.has('automerge')
-      || (pr.user.login === 'dependabot[bot]' && labels.has('automerge:dependencies')));
-}
-
-function currentChecks(contexts) {
-  const workflowKey = check => check.checkSuite?.workflowRun?.workflow?.id;
-  const latestRuns = new Map();
-  for (const check of contexts) {
-    const key = workflowKey(check);
-    if (key) latestRuns.set(key, Math.max(latestRuns.get(key) || 0, check.checkSuite.workflowRun.runNumber));
-  }
-  const current = contexts.filter(check => !workflowKey(check)
-    || check.checkSuite.workflowRun.runNumber === latestRuns.get(workflowKey(check)));
-  const latestJobs = new Map();
-  for (const check of current) {
-    if (!workflowKey(check) || !check.databaseId) continue;
-    const key = `${workflowKey(check)}:${check.name}`;
-    latestJobs.set(key, Math.max(latestJobs.get(key) || 0, check.databaseId));
-  }
-  return current.filter(check => !workflowKey(check) || !check.databaseId
-    || check.databaseId === latestJobs.get(`${workflowKey(check)}:${check.name}`));
-}
-
-function checksPass(contexts, containersRequired) {
-  contexts = currentChecks(contexts);
-  const nameOf = check => check.name || check.context;
-  if (!REQUIRED_CHECKS.every(name => contexts.some(check =>
-    nameOf(check) === name && check.status === 'COMPLETED' && check.conclusion === 'SUCCESS'
-    && check.checkSuite?.app?.slug === 'github-actions'))) return false;
-  return contexts.every(check => {
-    if (['PR automation', 'Release PR'].includes(nameOf(check))
-        && check.checkSuite?.app?.slug === 'github-actions') return true;
-    if (check.context) return check.state === 'SUCCESS';
-    if (check.status !== 'COMPLETED') return false;
-    if (check.conclusion === 'SUCCESS') return true;
-    return check.conclusion === 'SKIPPED' && (
-      (!containersRequired && /^containers(?: \/ |$)/.test(check.name))
-      || check.name === 'maniskill-gpu'
-    );
-  });
-}
-
 function assertGate(results, containersRequired) {
   for (const job of ['policy', 'test', 'package', 'installed-artifact', 'automation']) {
     if (results[job]?.result !== 'success') throw new Error(`${job} did not succeed`);
@@ -105,5 +50,4 @@ function assertGate(results, containersRequired) {
   if (results.containers?.result !== expected) throw new Error(`containers must be ${expected}`);
 }
 
-module.exports = {REQUIRED_CHECKS, conventionalTitle, needsContainers, managedLabels,
-  dependencyAutomerge, mergeEligible, currentChecks, checksPass, assertGate};
+module.exports = {conventionalTitle, needsContainers, managedLabels, assertGate};

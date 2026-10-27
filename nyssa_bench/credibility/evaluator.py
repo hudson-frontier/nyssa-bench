@@ -100,7 +100,7 @@ def evaluate_credibility(
             "hosted product infrastructure",
         ],
         "scope_statement": (
-            "Completing NyssaBench Phase 1 does not complete the broader Hudson Labs roadmap."
+            "Completing NyssaBench Phase 1 does not complete the broader Hudson Frontier roadmap."
         ),
         "evidence_records": [
             {"reference": item.citation(), "facts": item.facts} for item in evidence
