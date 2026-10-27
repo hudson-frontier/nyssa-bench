@@ -48,7 +48,9 @@ The first stable PyPI package version is **0.0.1**. Its TestPyPI candidate is
 `0.0.1rc1`. NEP's independent protocol version remains `0.1.0`; do not rename
 its schemas or conformance fixtures when changing the package version.
 
-Normal version bumps are proposed by Release Please after successful main CI.
+Version preparation and publication require separate manual workflow runs.
+After main CI passes, a maintainer can run **Release PR** on `main` to propose
+a version bump. Release Please cannot merge the PR, tag, or publish a release.
 Conventional PR titles determine the bump, and the version PR updates the
 changelog and package version together. See [GitHub automation](github_automation.md)
 for the release PR, explicit CI dispatch, and squash-merge flow. The existing
@@ -94,6 +96,13 @@ the exact main commit:
 ```bash
 git tag -s v0.0.1rc1 -m "NyssaBench 0.0.1rc1"
 git push origin v0.0.1rc1
+```
+
+Pushing a tag does not publish. After CI passes for the exact tagged main
+commit, explicitly run the publication workflow:
+
+```bash
+gh workflow run release.yml --repo hudson-frontier/nyssa-bench --ref v0.0.1rc1
 ```
 
 The workflow builds a wheel and source distribution, runs strict metadata
@@ -147,7 +156,13 @@ git tag -s v0.0.1 -m "NyssaBench 0.0.1"
 git push origin v0.0.1
 ```
 
-Stable tags run the same build and installed-wheel jobs, then wait at the
+After CI passes for the exact tagged commit, start publication manually:
+
+```bash
+gh workflow run release.yml --repo hudson-frontier/nyssa-bench --ref v0.0.1
+```
+
+That run performs the same build and installed-wheel jobs, then waits at the
 protected `pypi` environment. Approve that job only after checking the tag,
 attestation, distribution metadata, and recorded TestPyPI candidate.
 

@@ -1,106 +1,81 @@
 # GitHub automation
 
-Pull requests use conventional titles, automatic labels, and squash-only
-merges. The repository protects `main`, including administrator merges, with
-up-to-date branches, resolved conversations, and required CI checks.
+Pull requests use conventional titles, automatic labels, and manual squash
+merges. Maintainers merge only after all applicable checks pass on the current
+head, the branch is up to date, and review conversations are resolved.
 
 ## Pull requests and dependency updates
 
 Use a title such as `fix: preserve episode identities`, `feat: add an adapter`,
-or `feat!: remove an old contract`. The PR title becomes the squash commit
-title, so a series of development commits produces one release entry.
+or `feat!: remove an old contract`. The PR title becomes the squash commit title
+and determines the version bump when a maintainer prepares a release.
 
-The PR bot maintains `area:*`, `size:*`, and `release:*` labels. It removes
-outdated generated labels after changes, without removing human controls:
-
-- `automerge` opts a PR into automatic squash merging.
-- `hold` blocks automated merging, including otherwise eligible dependency PRs.
-- `automerge:dependencies` is set only for verified Dependabot patch/minor
-  updates without maintainer changes. Major updates require explicit opt-in.
-- Draft PRs never merge automatically. Release PRs require review or explicit
-  `automerge` opt-in, just like other non-Dependabot PRs.
+The PR bot maintains `area:*`, `size:*`, `release:*`, and Dependabot labels.
+It removes outdated generated labels and retired `automerge` opt-ins. Its token
+can read repository content and update issue labels; it cannot merge PRs or
+dispatch publication. No label authorizes an automatic merge.
 
 Dependabot checks GitHub Actions and `uv` dependencies weekly. Patch/minor
-updates are grouped; major updates remain separate. The validated `torch`,
-`torchvision`, and `mani-skill` pins are excluded from automatic version updates
-because they must be evaluated together on compatible simulator infrastructure.
+updates are grouped; major updates remain separate. Every update needs manual
+review and successful CI. The validated `torch`, `torchvision`, and `mani-skill`
+pins require evaluation together on compatible simulator infrastructure.
 
-## CI and merge protection
+## CI and merging
 
-Required checks are `test`, `package`, `installed-artifact (3.10)`,
+The core checks are `test`, `package`, `installed-artifact (3.10)`,
 `installed-artifact (3.13)`, and `CI gate`, supplied by GitHub Actions.
-`CI gate` requires the core jobs, conventional-title/path checks, automation
-tests, and Actionlint to succeed. Container-related changes also require all
-three existing container smoke profiles through a reusable workflow. A skipped
-or cancelled required job cannot make the gate green.
+The gate also requires conventional-title/path checks, automation tests, and
+Actionlint. Container-related changes require all three container smoke profiles.
+A skipped, failed, or cancelled required job cannot make the gate green.
+Optional self-hosted GPU checks do not establish simulator evidence when skipped.
 
-The bot also inspects additional reported checks and external commit statuses.
-Missing, pending, failed, cancelled, or truncated check results block merging.
-Intentional skips are limited to inapplicable container jobs and the optional
-self-hosted ManiSkill GPU job. No review or branch-protection bypass is used.
-The merge request includes the exact checked head SHA and rechecks the PR's
-draft state and labels immediately beforehand.
+Before merging, inspect all current checks and external statuses, update stale
+branches, and resolve review conversations. Use a squash merge with the exact
+checked head SHA. Enable strict branch protection or rulesets to enforce these
+requirements on the server; the workflows do not configure repository settings.
 
-Privileged PR automation checks out only `main`; it never executes PR code or
-downloads PR artifacts. PR titles and bodies are passed to GitHub APIs, not
-interpolated into shell commands. The normal CI workflow has read-only access.
+Privileged label automation checks out only `main`; it never executes PR code
+or downloads PR artifacts. Titles and bodies go to GitHub APIs, not shell
+commands. Normal CI has read-only access.
 
-## Versions and publication
+## Manual version preparation
 
-After successful CI on the current `main` commit, Release Please creates or
-updates a version PR. `fix`, `perf`, and `revert` produce a patch bump; `feat`
-produces a minor bump; a `!` or `BREAKING CHANGE:` footer produces a major bump.
-Documentation, CI, and maintenance changes alone do not require a release.
-Major bumps are honored even before version 1.0.
+Run **Release PR** on `main` only when a version bump is wanted. It checks the
+latest CI run for the current main commit before creating or updating a PR.
+CI completion does not trigger version preparation. Release Please is configured
+with `skip-github-release: true`, so it cannot create a tag or GitHub release.
 
-`nyssa_bench/version.py` remains the package-version source. The release bot
-updates it, `CHANGELOG.md`, and `.release-please-manifest.json` together; the
-version validator rejects manifest drift. The first stable package release is
-`0.0.1`. The package configuration temporarily sets `release-as: 0.0.1` so
-unreleased feature commits cannot advance the first release to 0.1.0 or 0.0.2.
-Remove that override in a follow-up PR after 0.0.1 has been published and
-verified; subsequent releases then use conventional version bumps. The
-validator rejects an override that disagrees with the package's stable version.
-The bootstrap SHA limits the initial changelog to recent development work and
-does not imply a prior published release. NEP remains independently versioned
-at `0.1.0`.
+`nyssa_bench/version.py` is the package-version source. A generic extra-file
+updater and its `x-release-please-version` marker keep that module, the manifest,
+and the changelog synchronized. The validator rejects manifest drift.
+The unpublished candidate is `0.0.1rc1`; the first planned stable release is
+`0.0.1`. The temporary `release-as: 0.0.1` override prevents skipping that first
+stable version. Remove it in a separate PR after publication is verified.
+NEP remains independently versioned at `0.1.0`.
 
-Bot-created version PRs receive explicit CI and labeling dispatches. When a
-version PR is merged and main CI passes, Release Please creates its version tag
-and GitHub release, then dispatches the existing package/container publication
-workflow at that tag. The release workflow attaches its immutable artifacts to
-the release and preserves the existing PyPI/TestPyPI environment approvals.
+Bot-created version PRs receive explicit CI and labeling dispatches because
+`GITHUB_TOKEN` events do not reliably trigger downstream workflows. A maintainer
+reviews and manually squash merges them only after every applicable check passes.
+Preparing or merging a version PR never starts publication.
 
-The workflow explicitly dispatches CI after bot merges and for release PRs,
-and dispatches publication after bot-created tags. This avoids relying on
-downstream events suppressed or approval-gated by `GITHUB_TOKEN`.
-No personal access token or additional repository secret is required.
+## Manual publication and recovery
 
-## Administration and recovery
+Create a release tag on the qualified main commit, then explicitly run
+**Release Python package** at that tag. Tag pushes do not start publication.
+The workflow requires the latest main CI run for the exact tagged commit to
+have succeeded. It retains the existing PyPI/TestPyPI environment approvals,
+provenance, installed-wheel checks, and refusal to overwrite immutable images.
+See [Releasing](releasing.md) for candidate qualification and publishing commands.
 
-Repository settings must keep merge commits and rebase merges disabled, squash
-and auto-merge enabled, and squash titles set to the PR title. Actions needs
-permission to create PRs; individual workflows request only their required
-permissions. Keep the five required checks above strict and pinned to the
-GitHub Actions app. Existing review and publishing protections stay in force.
+Keep repository auto-merge disabled and squash merging enabled. Actions needs
+permission to create PRs only for manually requested release preparation; default
+workflow permissions can remain read-only. Review and publication protections
+must remain in place.
 
-If the release action reports that Actions cannot create pull requests, check
-the organization's Actions policy before retrying. A repository cannot enable
-this permission when its organization disallows it. An organization
-administrator must permit it first, then enable PR creation for this repository;
-default workflow permissions can remain read-only. Until then, prepare version
-PRs manually and use the same CI and protected publication flow.
-
-Use **PR automation → Run workflow** with a PR number to reconcile labels and
-retry merging after a resolved review or external check; use `0` to synchronize
-the label catalog only. Completed CI runs and a 15-minute reconciliation schedule
-also retry eligible PRs after reviews, conversations, or external checks change. If a
-branch falls behind main, update it and allow CI to rerun.
-
-Use **Release PR → Run workflow** on `main` to reconcile release PRs after
-main's CI has passed. Use **Release Python package → Run workflow** at a release
-tag if publication was not dispatched. Publication retains its existing refusal
-to overwrite immutable container version tags.
+Use **PR automation → Run workflow** with a PR number to reconcile labels, or
+`0` to synchronize the label catalog. It never retries a merge. When recovering
+from failed automation, disable release workflows until the repair is merged
+and main CI is green. Do not rerun publication to repair an unrelated CI failure.
 
 Local validation:
 

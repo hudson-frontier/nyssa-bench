@@ -1,7 +1,5 @@
 [
-  {"name": "automerge", "color": "0e8a16", "description": "Opt in to squash merging after all applicable CI passes"},
-  {"name": "automerge:dependencies", "color": "0e8a16", "description": "Verified Dependabot patch/minor update eligible for automatic merging"},
-  {"name": "hold", "color": "b60205", "description": "Block automated merging"},
+  {"name": "hold", "color": "b60205", "description": "Maintainer requests changes before merging"},
   {"name": "dependencies", "color": "0366d6", "description": "Dependency update"},
   {"name": "bot:dependabot", "color": "0366d6", "description": "Pull request authored by Dependabot"},
   {"name": "area:ci", "color": "5319e7", "description": "GitHub Actions or repository automation"},

@@ -82,6 +82,39 @@ def test_initial_release_override_cannot_skip_or_repeat_a_version(
             validator.validate_release_version()
 
 
+def test_release_generator_updates_the_single_version_source() -> None:
+    config = json.loads((ROOT / "release-please-config.json").read_text(encoding="utf-8"))
+    assert {"type": "generic", "path": "nyssa_bench/version.py"} in (
+        config["packages"]["."]["extra-files"]
+    )
+    version_source = (ROOT / "nyssa_bench/version.py").read_text(encoding="utf-8")
+    version_line = next(line for line in version_source.splitlines() if line.startswith("__version__"))
+    assert "# x-release-please-version" in version_line
+
+
+def test_release_workflows_are_manual_and_label_bot_cannot_merge() -> None:
+    import yaml
+
+    workflows = ROOT / ".github/workflows"
+    for name in ["release-please.yml", "release.yml"]:
+        workflow = yaml.load((workflows / name).read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+        assert set(workflow["on"]) == {"workflow_dispatch"}
+    preparation = yaml.load(
+        (workflows / "release-please.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
+    )
+    release_action = next(
+        step for step in preparation["jobs"]["release"]["steps"]
+        if step.get("uses", "").startswith("googleapis/release-please-action@")
+    )
+    assert release_action["with"]["skip-github-release"] == "true"
+    labeling = yaml.load(
+        (workflows / "pr-automation.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
+    )
+    assert labeling["permissions"] == {
+        "contents": "read", "pull-requests": "read", "issues": "write"
+    }
+
+
 def test_package_metadata_uses_hudson_identity_and_public_urls() -> None:
     project = _pyproject()["project"]
 

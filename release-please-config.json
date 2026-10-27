@@ -10,6 +10,7 @@
       "release-type": "python",
       "release-as": "0.0.1",
       "changelog-path": "CHANGELOG.md",
+      "extra-files": [{"type": "generic", "path": "nyssa_bench/version.py"}],
       "changelog-sections": [
         {"type": "feat", "section": "Features"},
         {"type": "fix", "section": "Bug Fixes"},
