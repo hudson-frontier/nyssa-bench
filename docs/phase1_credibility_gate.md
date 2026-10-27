@@ -2,7 +2,7 @@
 
 The Phase 1 gate separates implemented measurement infrastructure from
 validated benchmark evidence and predictive sim-real evidence. It applies only
-to NyssaBench. Passing it does not complete the broader Hudson Labs roadmap.
+to NyssaBench. Passing it does not complete the broader Hudson Frontier roadmap.
 
 The normative input is
 [`claims/phase1_credibility.json`](../claims/phase1_credibility.json). Evidence

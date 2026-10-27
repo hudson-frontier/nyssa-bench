@@ -1,7 +1,7 @@
 # Project scope
 
 NyssaBench is the failure-aware evaluation and audit layer for embodied AI
-policies. It is Hudson Labs' first foundational project, but it is not the
+policies. It is Hudson Frontier' first foundational project, but it is not the
 umbrella repository for every Hudson research program or product.
 
 NyssaBench answers one question:
@@ -55,7 +55,7 @@ Separate projects should own:
 - robot fleet operation and deployment control;
 - hosted evaluation services, customer data planes, deployment-readiness
   products, billing, and organization management;
-- Hudson Labs' organization-wide research strategy.
+- Hudson Frontier' organization-wide research strategy.
 
 These systems may integrate with NyssaBench, but their implementation should not
 land here merely because NyssaBench evaluates their outputs.
