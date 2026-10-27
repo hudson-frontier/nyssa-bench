@@ -334,7 +334,8 @@ def test_mujoco_friction_stressor_changes_and_restores_model_values():
     )
 
 
-def test_maniskill_cpu_friction_stressor_changes_and_restores_physx_materials():
+@pytest.mark.parametrize("actor_collection", ["actors", "actor_views"])
+def test_maniskill_cpu_friction_stressor_changes_and_restores_physx_materials(actor_collection):
     class Material:
         static_friction = 0.6
         dynamic_friction = 0.4
@@ -352,8 +353,9 @@ def test_maniskill_cpu_friction_stressor_changes_and_restores_physx_materials():
 
     class Scene:
         gpu_sim_enabled = False
-        actor_views = {"cube": View()}
         articulation_views: dict[str, Any] = {}
+
+    setattr(Scene, actor_collection, {"cube": View()})
 
     class Target:
         scene = Scene()
@@ -366,7 +368,7 @@ def test_maniskill_cpu_friction_stressor_changes_and_restores_physx_materials():
 
     evidence = engine.apply_stressor("friction_scale", {"scale": 0.5})
 
-    material = Scene.actor_views["cube"]._bodies[0].get_collision_shapes()[0].material
+    material = getattr(Scene, actor_collection)["cube"]._bodies[0].get_collision_shapes()[0].material
     assert evidence["status"] == "applied"
     assert evidence["material_count"] == 1
     assert material.static_friction == pytest.approx(0.3)
@@ -374,6 +376,28 @@ def test_maniskill_cpu_friction_stressor_changes_and_restores_physx_materials():
     engine._restore_friction_baseline()
     assert material.static_friction == pytest.approx(0.6)
     assert material.dynamic_friction == pytest.approx(0.4)
+
+
+def test_maniskill_gpu_scene_never_captures_or_restores_collision_materials():
+    from types import SimpleNamespace
+
+    def reject_mutation(value):
+        pytest.fail("GPU collision materials must not be mutated after scene creation")
+
+    material = SimpleNamespace(
+        static_friction=0.6, dynamic_friction=0.4,
+        set_static_friction=reject_mutation, set_dynamic_friction=reject_mutation,
+    )
+    body = SimpleNamespace(get_collision_shapes=lambda: [SimpleNamespace(physical_material=material)])
+    view = SimpleNamespace(_bodies=[body], links=[])
+    scene = SimpleNamespace(gpu_sim_enabled=True, actors={"cube": view})
+    engine = ManiSkillEngine()
+    engine.env = SimpleNamespace(unwrapped=SimpleNamespace(scene=scene))
+
+    engine._capture_friction_baseline()
+    engine._restore_friction_baseline()
+
+    assert engine.apply_stressor("friction_scale", {"scale": 0.5})["status"] == "unsupported"
 
 
 class _StressorUnitEngine(NyssaEngine):
@@ -633,11 +657,18 @@ def test_real_maniskill_cpu_backend_executes_dynamics_and_system_stressors():
         env.step(executed_action)
 
         assert pipeline.applications[0].backend_evidence["material_count"] > 0
+        for material, static, dynamic in engine._baseline_friction_materials:
+            assert material.static_friction == pytest.approx(static * 0.5)
+            assert material.dynamic_friction == pytest.approx(dynamic * 0.5)
         assert np.allclose(executed_action, np.zeros(env.action_space.shape))
         assert [item.status for item in pipeline.applications] == [
             "applied",
             "applied",
         ]
+        engine._restore_friction_baseline()
+        for material, static, dynamic in engine._baseline_friction_materials:
+            assert material.static_friction == pytest.approx(static)
+            assert material.dynamic_friction == pytest.approx(dynamic)
     finally:
         env.close()
 
