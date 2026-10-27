@@ -20,8 +20,8 @@ LABEL org.opencontainers.image.title="NyssaBench core" \
       org.opencontainers.image.revision="${NYSSA_COMMIT}" \
       org.opencontainers.image.created="${NYSSA_BUILD_DATE}" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      io.hudson-labs.nyssa.python="${PYTHON_VERSION}" \
-      io.hudson-labs.nyssa.simulator="none"
+      io.hudson-frontier.nyssa.python="${PYTHON_VERSION}" \
+      io.hudson-frontier.nyssa.simulator="none"
 
 ENV NYSSA_CONTAINER_PROFILE=core \
     NYSSA_CONTAINER_VERSION=${NYSSA_VERSION} \

@@ -33,9 +33,9 @@ LABEL org.opencontainers.image.title="NyssaBench MuJoCo" \
       org.opencontainers.image.revision="${NYSSA_COMMIT}" \
       org.opencontainers.image.created="${NYSSA_BUILD_DATE}" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      io.hudson-labs.nyssa.python="${PYTHON_VERSION}" \
-      io.hudson-labs.nyssa.mujoco="${MUJOCO_VERSION}" \
-      io.hudson-labs.nyssa.gymnasium="${GYMNASIUM_VERSION}"
+      io.hudson-frontier.nyssa.python="${PYTHON_VERSION}" \
+      io.hudson-frontier.nyssa.mujoco="${MUJOCO_VERSION}" \
+      io.hudson-frontier.nyssa.gymnasium="${GYMNASIUM_VERSION}"
 
 ENV NYSSA_CONTAINER_PROFILE=mujoco \
     NYSSA_CONTAINER_VERSION=${NYSSA_VERSION} \

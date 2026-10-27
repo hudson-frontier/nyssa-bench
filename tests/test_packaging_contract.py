@@ -85,8 +85,8 @@ def test_initial_release_override_cannot_skip_or_repeat_a_version(
 def test_package_metadata_uses_hudson_identity_and_public_urls() -> None:
     project = _pyproject()["project"]
 
-    assert project["authors"] == [{"name": "Hudson Labs"}]
-    assert project["maintainers"] == [{"name": "Hudson Labs"}]
+    assert project["authors"] == [{"name": "Hudson Frontier"}]
+    assert project["maintainers"] == [{"name": "Hudson Frontier"}]
     assert project["license"] == "Apache-2.0"
     assert project["license-files"] == ["LICENSE"]
     assert project["urls"] == {

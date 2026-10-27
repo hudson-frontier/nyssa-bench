@@ -10,8 +10,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-authors = [{ name = "Hudson Labs" }]
-maintainers = [{ name = "Hudson Labs" }]
+authors = [{ name = "Hudson Frontier" }]
+maintainers = [{ name = "Hudson Frontier" }]
 keywords = ["robotics", "benchmark", "embodied-ai", "evaluation", "simulation"]
 classifiers = [
   "Development Status :: 3 - Alpha",

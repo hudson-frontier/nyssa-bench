@@ -60,7 +60,7 @@ def test_repository_gate_passes_measurement_core_only(tmp_path: Path) -> None:
     assert report["public_wording_claim_id"] == "current_public_positioning"
     assert report["issue_dependencies"] == list(range(13, 24))
     assert report["scope_exclusions"]
-    assert "broader Hudson Labs roadmap" in report["scope_statement"]
+    assert "broader Hudson Frontier roadmap" in report["scope_statement"]
     assert len(report["report_sha256"]) == 64
     assert "Measurement Core" in (tmp_path / "phase1_credibility.html").read_text(
         encoding="utf-8"
