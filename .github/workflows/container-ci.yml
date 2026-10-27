@@ -77,7 +77,8 @@ jobs:
             NYSSA_COMMIT=${{ github.sha }}
             NYSSA_BUILD_DATE=${{ steps.identity.outputs.build_date }}
           cache-from: type=gha,scope=pr-${{ matrix.profile }}
-          cache-to: type=gha,mode=max,scope=pr-${{ matrix.profile }}
+          # Main maintains the shared cache; PRs only restore it.
+          cache-to: ${{ github.ref == 'refs/heads/main' && format('type=gha,mode=max,scope=pr-{0}', matrix.profile) || '' }}
       - name: Run installed command outside the checkout
         shell: bash
         run: |
